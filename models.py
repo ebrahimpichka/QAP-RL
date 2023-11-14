@@ -88,10 +88,10 @@ class PointerBlock(nn.Module):
         self.gru = nn.GRU(embed_dim, embed_dim, batch_first=True)
         self.attention = AttentionBlock(attn_dim, embed_dim)
 
-    def forward(self, last_selected, hidden, embeddings): #, F_edge_index, F_edge_weight, L_edge_index, L_edge_weight):
-        gru_output, gru_hidden = self.gru(last_selected, hidden)
+    def forward(self, last_selected, hidden_state, embeddings): #, F_edge_index, F_edge_weight, L_edge_index, L_edge_weight):
+        gru_output, gru_hidden_state = self.gru(last_selected, hidden_state)
         out_probs = self.attention(embeddings, gru_output)
-        return out_probs, gru_output, gru_hidden
+        return out_probs, gru_output, gru_hidden_state
 
 
 class DoublePointerNetwork(nn.Module):
