@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.distributions.categorical import Categorical
 
 from torch_geometric.nn import GCNConv
 
@@ -104,13 +105,18 @@ class DoublePointerNetwork(nn.Module):
         self.U_ptr= PointerBlock(embed_dim)
         self.L_ptr= PointerBlock(embed_dim)
 
-    def select_best(self, embeddings, probs):
-        # select via argmax
-        # probs: (batch_size, n)
-        # embeddings: (batch_size, n, embed_dim)
-        # return: (batch_size, embed_dim)
-        top = torch.argmax(probs, dim=1)
-        return top, embeddings[torch.arange(embeddings.size(0)), :, top]
+    # def select_best(self, embeddings, probs):
+    #     # select via argmax
+    #     # probs: (batch_size, n)
+    #     # embeddings: (batch_size, n, embed_dim)
+    #     # return: (batch_size, embed_dim)
+    #     top = torch.argmax(probs, dim=1)
+    #     return top, embeddings[torch.arange(embeddings.size(0)), :, top]
+    def select_action(embeddings, probs):
+        # Sample an action from the action probability distribution
+        action = Categorical(probs).sample()
+
+    return action
 
     def forward(self, F_matrix, F_edge_index, F_edge_weight, L_matrix):
         
