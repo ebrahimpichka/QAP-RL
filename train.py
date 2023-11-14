@@ -51,15 +51,25 @@ def calc_trajectory_reward(fac_matrix, loc_matrix, loc_trajectory, fac_trajector
 
     return reward_trajectory
 
+
+
+
+
 class Config():
     """The config class."""
     num_instances = 20 # (n)
-    input_dim = 2
+    loc_input_dim = 2 
+    fac_input_dim = 20 # one-hot encoding of the facilities as initial input feature
+    attn_dim = 256
     embed_dim = 512
     dropout = 0.1
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     batch_size = 50
     epochs = 20
+
+
+
+
 
 class Trainer():
     """The trainer class.
@@ -86,7 +96,7 @@ class Trainer():
             )
         
         self.critic = Critic(
-            config.num_instances, 
+            2*(config.num_instances**2)+2*config.num_instances, # 2*(n^2) + 2*n
             config.embed_dim, 
             config.dropout, 
             config.device
