@@ -65,18 +65,18 @@ class AttentionBlock(nn.Module):
             torch.matmul(
                F.relu(torch.matmul(torch.cat((embeddings, gru_output), dim=2), self.W_a.T)),  self.v_a
                 ),
-            dim=0)
+            dim=1) # -> (batch_size, n)
 
         # (2) c = La
         # c = torch.matmul(a, embeddings)
-        c = torch.bmm(a.unsqueeze(1), embeddings)
+        c = torch.bmm(a.unsqueeze(1), embeddings) # -> (batch_size, 1, embed_dim)
 
         # (3) o⊤ = softmax(v⊤_o f(W_o [L˜; c]))
         o = F.softmax(
             torch.matmul(
                 F.relu(torch.matmul(torch.cat((embeddings, c.repeat(1,3,1)), dim=2), self.W_o.T)), self.v_o
                 ),
-            dim=0)
+            dim=1) # -> (batch_size, n)
         
         return o
         
@@ -108,20 +108,16 @@ class DoublePointerNetwork(nn.Module):
         self.U_ptr= PointerBlock(embed_dim)
         self.L_ptr= PointerBlock(embed_dim)
 
-    # def select_best(self, embeddings, probs):
-    #     # select via argmax
-    #     # probs: (batch_size, n)
-    #     # embeddings: (batch_size, n, embed_dim)
-    #     # return: (batch_size, embed_dim)
-    #     top = torch.argmax(probs, dim=1)
-    #     return top, embeddings[torch.arange(embeddings.size(0)), :, top]
-
     def select_action(embeddings, probs):
         # Sample an action from the action probability distribution
+        # embeddings: (batch_size, n, embed_dim)
+        # probs: (batch_size, n)
+        # return: (batch_size), (batch_size, embed_dim)
+        batch_size = embeddings.size(0)
         with torch.no_grad():
             m = Categorical(probs)
-            action = m.sample()
-        return action, embeddings[torch.arange(embeddings.size(0)), :, action]
+            action = m.sample() # -> (batch_size)
+        return action, embeddings[torch.arange(batch_size), action, :]
 
     def forward(self, F_matrix, F_edge_index, F_edge_weight, L_matrix):
         
@@ -132,7 +128,7 @@ class DoublePointerNetwork(nn.Module):
         # encode locations
         loc_embeddings = self.loc_embedding_layer(L_matrix.permute(2,1)).permute(2,1) # (batch_size, n, 2) -> (batch_size, n, embed_dim)
         # encode facilities
-        fac_embeddings = self.fac_embedding_layer(F_matrix, F_edge_index, F_edge_weight) # (batch_size, n, 2) -> (batch_size, n, embed_dim)
+        fac_embeddings = self.fac_embedding_layer(F_matrix, F_edge_index, F_edge_weight) # (batch_size, n, inp) -> (batch_size, n, embed_dim)
 
         # initialize the starting `last selected embedding`
         U_last_selected_emb = torch.zeros(batch_size, embed_dim).to(self.device)
@@ -172,13 +168,8 @@ class DoublePointerNetwork(nn.Module):
 
         return U_probs, L_probs, U_selected_locs, L_selected_facs
 
-    # def select_sample(self, embeddings, probs):
-    #     # probs: (batch_size, n)
-    #     # embeddings: (batch_size, n, embed_dim)
-    #     # return: (batch_size, embed_dim)
-    #     top = torch.multinomial(probs, 1)
-    #     return embeddings[torch.arange(embeddings.size(0)), top.squeeze(1), :]
-    
+
+# critic network
 class Critic(nn.Module):
     def __init__(self, input_dim, embed_dim, dropout):
         super(Critic, self).__init__()
@@ -187,8 +178,8 @@ class Critic(nn.Module):
         self.linear3 = nn.Linear(embed_dim, embed_dim)
         self.dropout = dropout
 
-    def forward(self, data):
-        x = data.x
+    def forward(self, x):
+        # x: (batch_size, 2(n^2) + 2n))
         x = F.relu(self.linear1(x))
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = F.relu(self.linear2(x))
