@@ -57,6 +57,6 @@ def generate_batch_qap_problem_instance(batch_size, n):
 	for i in range(batch_size):
 		locs, facs, dist_mat, flow_mat = generate_qap_problem_instance(n)
 		locations[i], facilities[i], distance_matrix[i], flow_matrix[i] = locs, facs, dist_mat, flow_mat
-
+	locations, facilities, distance_matrix, flow_matrix = map(torch.tensor, (locations, facilities, distance_matrix, flow_matrix))
 	return locations, facilities, distance_matrix, flow_matrix
 	

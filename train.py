@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from models import DoublePointerNetwork, Critic
+from utils import generate_batch_qap_problem_instance
 
 
 def calc_trajectory_reward(fac_matrix, loc_matrix, loc_trajectory, fac_trajectory):
@@ -106,6 +107,8 @@ class Trainer():
         """Trains the model.
 
         """
+        locations, facilities, distance_matrix, fac_matrix =\
+            generate_batch_qap_problem_instance(self.config.batch_size, self.config.num_instances)
         batch_size = fac_matrix.size(0)
         num_instances = fac_matrix.size(1)
 
@@ -113,29 +116,6 @@ class Trainer():
         reward_trajectory = calc_trajectory_reward(fac_matrix, loc_matrix, loc_trajectory, fac_trajectory)
 
         # calculate the critic trajectory
-        critic_trajectory = torch.zeros(2*num_instances, batch_size)
-        for timestep in range(0, 2*num_instances, 2):
-            critic_trajectory[timestep] = torch.zeros(batch_size)
-
-            selected_locs = loc_trajectory[timestep//2]
-            selected_facs = fac_trajectory[timestep//2]
-
-            up2here_locs = loc_trajectory[:timestep//2 - 1]
-            up2here_facs = fac_trajectory[:timestep//2 - 1]
-
-            batch_rewards = torch.zeros(batch_size)
-            for batch_idx in range(batch_size):
-                single_up2here_locs = up2here_locs[:, batch_idx]
-                single_up2here_facs = up2here_facs[:, batch_idx]
-
-                selected_loc = selected_locs[batch_idx]
-                selected_fac = selected_facs[batch_idx]
-                
-                
-                reward = 0
-
-                for loc, fac in zip(single_up2here_locs, single_up2here_facs):
-                    dist =
-    
+        # TODO
 
 
