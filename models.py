@@ -179,7 +179,7 @@ class Critic(nn.Module):
         self.dropout = dropout
 
     def forward(self, x):
-        # x: (batch_size, 2(n^2) + 2n))
+        # x: (batch_size, 2(n^2) + 2n)) 
         x = F.relu(self.linear1(x))
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = F.relu(self.linear2(x))
