@@ -8,3 +8,7 @@ The paper formulizes QAP as a sequential decision problem (i.e. an MDP) by selec
 ## Reference
 
 [1] Bagga, P. S., & Delarue, A. (2023). ***Solving the quadratic assignment problem using deep reinforcement learning***. https://doi.org/10.48550/ARXIV.2310.01604
+
+
+TODO: add action masking to loc/fac selection
+TODO: complete A2C training loop

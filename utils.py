@@ -1,37 +1,38 @@
 import numpy as np
+import torch
 
 
 def generate_qap_problem_instance(n):
-    """Generates a problem instance for the Quadratic Assignment Problem (QAP).
+	"""Generates a problem instance for the Quadratic Assignment Problem (QAP).
 
-    Args:
+	Args:
         n: The problem size.
 
-    Returns:
+	Returns:
         A tuple of four NumPy arrays:
             * locations: A 2D array of locations.
             * facilities: A 2D array of facilities.
             * distance_matrix: A 2D array of distances between locations.
             * flow_matrix: A 2D array of flows between facilities.
-    """
+	"""
 
-    # Generate random locations.
-    locations = np.random.randn(n, 2)
+	# Generate random locations.
+	locations = np.random.randn(n, 2)
 
-    # Generate random facilities.
-    facilities = np.random.randn(n, 2)
+	# Generate random facilities.
+	facilities = np.random.randn(n, 2)
 
-    # Generate a distance matrix.
-    distance_matrix = np.zeros((n, n))
-    for i in range(n):
-    	for j in range(n):
-        	distance_matrix[i, j] = np.linalg.norm(locations[i] - locations[j])
+	# Generate a distance matrix.
+	distance_matrix = np.zeros((n, n))
+	for i in range(n):
+		for j in range(n):
+			distance_matrix[i, j] = np.linalg.norm(locations[i] - locations[j])
 
     # Generate a flow matrix.
-    flow_matrix = np.random.rand(n, n)
+	flow_matrix = np.random.rand(n, n)
 	flow_matrix = flow_matrix + flow_matrix.T
 
-    return locations, facilities, distance_matrix, flow_matrix
+	return locations, facilities, distance_matrix, flow_matrix
 
 
 def generate_batch_qap_problem_instance(batch_size, n):
